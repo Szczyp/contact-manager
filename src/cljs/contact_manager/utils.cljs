@@ -1,7 +1,7 @@
 ;;Namespace that extends JavaScript's object and array to play nicely
 ;;with Clojure's semantics and act as transient collections.
 
-(ns contact-manager.util
+(ns contact-manager.utils
   (:require [goog.object :as gobject])
   (:refer-clojure :exclude [assoc!
                             map filter remove]))

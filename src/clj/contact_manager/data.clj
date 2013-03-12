@@ -21,11 +21,46 @@
               :user/password (creds/hash-bcrypt "a")
               :user/roles :user.role/user}])
 
+(defn- transform-keys [f m]
+  (let [get-keys (fn [m]
+                   (->> (keys m)
+                        (map #(hash-map %1 (f %1)))
+                        (reduce into)))]
+    (clojure.set/rename-keys m (get-keys m))))
+
+(def ^:private collapse-keys (partial transform-keys #(keyword (re-find #"[^/]+$" (name %)))))
+
+(defn- expand-keys [n m]
+  (transform-keys #(keyword (str (name n) "/" (name %))) m))
+
+(defn- get-entity [db eid]
+  (->> eid
+       (d/entity db)
+       (merge {})
+       collapse-keys))
+
+(defn- get-first [db query]
+  (->> query
+       ffirst
+       (get-entity db)))
+
+(defn- get-all [db query]
+  (->> query
+       (map (comp #(get-entity db %) first))))
+
+(defn- save [n m]
+  (d/transact conn
+              [(merge {:db/id (d/tempid :db.part/user)}
+                      (expand-keys n m))]))
+
 (defn get-user-auth [username]
-  (let [db (db conn)
-        user-auth (->> (q `[:find ?user :where [?user :user/username ~username]] db)
-                       (ffirst)
-                       (d/entity db))]
-    {:username (:user/username user-auth)
-     :password (:user/password user-auth)
-     :roles (:user/roles user-auth)}))
+  (let [db (db conn)]
+    (->> (q `[:find ?user :where [?user :user/username ~username]] db)
+         (get-first db))))
+
+(defn add-contact [m] (save :contact m))
+
+(defn get-contacts []
+  (let [db (db conn)]
+    (->> (q '[:find ?e :where [?e :contact/name _]] db)
+         (get-all db))))
