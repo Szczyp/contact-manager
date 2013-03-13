@@ -9,6 +9,8 @@
 
 (def ^:private conn (d/connect uri))
 
+(defn get-db [] (db conn))
+
 @(d/transact conn (read-string (slurp (io/resource "schema.edn"))))
 
 (d/transact conn
@@ -39,28 +41,21 @@
        (merge {})
        collapse-keys))
 
-(defn- get-first [db query]
+(defn get-first [db query]
   (->> query
        ffirst
        (get-entity db)))
 
-(defn- get-all [db query]
+(defn get-all [db query]
   (->> query
        (map (comp #(get-entity db %) first))))
 
-(defn- save [n m]
+(defn save! [n m]
   (d/transact conn
               [(merge {:db/id (d/tempid :db.part/user)}
                       (expand-keys n m))]))
 
 (defn get-user-auth [username]
-  (let [db (db conn)]
+  (let [db (get-db)]
     (->> (q `[:find ?user :where [?user :user/username ~username]] db)
          (get-first db))))
-
-(defn add-contact [m] (save :contact m))
-
-(defn get-contacts []
-  (let [db (db conn)]
-    (->> (q '[:find ?e :where [?e :contact/name _]] db)
-         (get-all db))))

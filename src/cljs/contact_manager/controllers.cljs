@@ -9,7 +9,7 @@
                 $scope))
  (.controller "ContactsCtrl"
               (fn [$scope $http]
-                (-> (.get $http "/contacts")
+                (-> (.get $http "/contacts/all")
                     (.success #(assoc! $scope :contacts %)))
                 (.$on $scope "contact:add" #(conj! (:contacts $scope) %2))))
  (.controller "ContactFormCtrl"
@@ -22,6 +22,6 @@
                   (assoc! $scope
                           :addContact (fn []
                                         (let [contact (:contact $scope)]
-                                          (.post $http "/contact" contact)
+                                          (.post $http "/contacts" contact)
                                           (reset-contact!))))
                   (reset-contact!)))))
