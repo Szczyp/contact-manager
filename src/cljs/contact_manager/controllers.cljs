@@ -1,8 +1,7 @@
 (ns contact-manager.controllers
   (:refer-clojure :exclude [assoc! map filter remove])
   (:require [contact-manager.utils :refer [assoc! update-in! map filter remove]])
-  (:use [goog.array :only (removeIf find)]
-        [goog.object :only (extend clone)]))
+  (:use [goog.array :only (removeIf find)]))
 
 (->
  (.module js/angular "contact-manager.controllers" (array "contact-manager.services"))
@@ -25,7 +24,7 @@
                 (.$on $scope "contact:change"
                       (fn [_ nc]
                         (if-let [c (find (:contacts $scope) #(= (:id %) (:id nc)))]
-                          (extend c nc))))))
+                          (js/angular.extend c nc))))))
 
  (.controller "ContactFormCtrl"
               (fn [$scope $http]
@@ -42,8 +41,6 @@
                                     (reset-contact!)))
                   (.$on $scope "contact:edit"
                         (fn [_ c]
-                          (assoc! $scope :old-contact (let [nc (empty-contact)]
-                                                        (extend nc c)
-                                                        nc))
+                          (assoc! $scope :old-contact (js/angular.extend (empty-contact) c))
                           (assoc! $scope :contact c)))
                   (reset-contact!)))))
