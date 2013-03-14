@@ -11,6 +11,7 @@
                  [hiccup "1.0.2"]
                  [cheshire "5.0.2"]
                  [ccfontes/hiccup-bootstrap "0.1.3"]]
+  :min-lein-version "2.0.0"
   :plugins [[lein-cljsbuild "0.3.0"]]
   :source-paths ["src/clj"]
   :cljsbuild {:builds {:main {:source-paths ["src/cljs"]
