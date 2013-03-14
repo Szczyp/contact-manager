@@ -35,27 +35,38 @@
 (defn- expand-keys [n m]
   (transform-keys #(keyword (str (name n) "/" (name %))) m))
 
-(defn- get-entity [db eid]
+(defn- entity->map [e]
+  (merge (select-keys e [:db/id]) e))
+
+(defn- get-map [db eid]
   (->> eid
        (d/entity db)
-       (merge {})
+       entity->map
        collapse-keys))
 
-(defn get-first [db query]
-  (->> query
-       ffirst
-       (get-entity db)))
+(def get (partial get-map (get-db)))
 
-(defn get-all [db query]
-  (->> query
-       (map (comp #(get-entity db %) first))))
+(defn get-first [query]
+  (let [db (get-db)]
+   (->> (q query db)
+        ffirst
+        (get-map db))))
+
+(defn get-all [query]
+  (let [db (get-db)]
+   (->> (q query db)
+        (map (comp #(get-map db %) first)))))
 
 (defn save! [n m]
-  (d/transact conn
-              [(merge {:db/id (d/tempid :db.part/user)}
-                      (expand-keys n m))]))
+  (let [id (clojure.core/get m :id (d/tempid :db.part/user))
+        tx @(d/transact conn [(merge {:db/id id} (expand-keys n (dissoc m :id)))])
+        id (if-let [new-id (d/resolve-tempid (:db-after tx) (:tempids tx) id)]
+             new-id
+             id)]
+    (assoc m :id id)))
+
+(defn delete! [id]
+  (d/transact conn [[:db.fn/retractEntity id]]))
 
 (defn get-user-auth [username]
-  (let [db (get-db)]
-    (->> (q `[:find ?user :where [?user :user/username ~username]] db)
-         (get-first db))))
+  (get-first `[:find ?user :where [?user :user/username ~username]]))

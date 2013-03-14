@@ -16,7 +16,6 @@
   :source-paths ["src/clj"]
   :cljsbuild {:builds {:main {:source-paths ["src/cljs"]
                               :compiler {:output-to "resources/public/js/app.js"
-                                         :optimizations :whitespace
                                          :pretty-print true}
                               :jar true}}}
   :main contact-manager.server)

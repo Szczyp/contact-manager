@@ -6,11 +6,12 @@
             (compojure [handler :as handler]
                        [route :as route])
             [ring.middleware.resource :as resource]
-            [ring.util.response :as response])
+            [ring.util.response :as response]
+            [contact-manager.data :as d])
   (:use [compojure.core :as compojure :only (GET ANY defroutes context)]
         [ring.middleware.json :only (wrap-json-body wrap-json-response)]
         [hiccup.bootstrap.middleware :only (wrap-bootstrap-resources)]
-        [contact-manager views broadcast contacts data]))
+        [contact-manager views broadcast contacts]))
 
 (defroutes routes
   (context "/contacts" [] (-> contact-routes (friend/wrap-authorize #{:user.role/user})))
@@ -22,7 +23,7 @@
 
 (def app
   (-> routes
-      (friend/authenticate {:credential-fn (partial creds/bcrypt-credential-fn get-user-auth)
+      (friend/authenticate {:credential-fn (partial creds/bcrypt-credential-fn d/get-user-auth)
                             :workflows [(workflows/interactive-form)]})
       handler/site
       (wrap-json-body {:keywords? true})

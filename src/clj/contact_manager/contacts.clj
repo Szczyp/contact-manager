@@ -1,12 +1,11 @@
 (ns contact-manager.contacts
+  (:require [contact-manager.data :as d])
   (:use [compojure.core]
-        [datomic.api :only (q)]
         [hiccup.form]
-        [contact-manager data views broadcast]))
+        [contact-manager views broadcast]))
 
 (def contact-form
-  [:form {:ng-controller "ContactFormCtrl"
-          :ng-submit "addContact()"}
+  [:form {:ng-controller "ContactFormCtrl"}
    (text-field {:class "input-block-level"
                 :placeholder "name"
                 :ng-model "contact.name"
@@ -20,8 +19,12 @@
                 :placeholder "phone"
                 :ng-model "contact.phone"}
                "phone")
-   (submit-button {:class "btn btn-primary"}
-                  "Add")])
+   [:button {:class "btn btn-primary"
+             :ng-click "add()"}
+    "Save"]
+   [:button {:class "btn btn-primary"
+             :ng-click "cancel()"}
+    "Cancel"]])
 
 (def main-page
   (master-template
@@ -30,28 +33,33 @@
     contact-form
     [:ul
      [:li {:ng-repeat "contact in contacts"}
-      "Name: {{ contact.name }} Email: {{ contact.email }} Phone: {{ contact.phone }}"]]]))
+      [:span "Name: {{ contact.name }} Email: {{ contact.email }} Phone: {{ contact.phone }}"]
+      [:i {:class "icon-remove"
+           :ng-click "remove(contact)"}]
+      [:i {:class "icon-edit"
+           :ng-click "edit(contact)"}]]]]))
 
-(defn get-contact [id] {})
+(defn save-contact! [contact]
+  (let [cmd  (if (:id contact) "contact:change" "contact:add")]
+    (->> contact
+         (d/save! :contact)
+         (enqueue cmd)))
+  {})
 
-(defn add-contact! [m] (save! :contact m) m)
-
-(defn delete-contact! [id] {})
+(defn delete-contact! [id]
+  (d/delete! id)
+  (enqueue "contact:remove" id)
+  {})
 
 (defn get-contacts []
-  (let [db (get-db)]
-    (->> (q '[:find ?e :where [?e :contact/name _]] db)
-         (get-all db))))
+  (d/get-all '[:find ?e :where [?e :contact/name _]]))
 
 (defroutes contact-routes
   (GET "/" [] main-page)
   (GET "/all" [] (get-contacts))
-  (POST "/" {contact :body}
-        (->> contact
-             add-contact!
-             (enqueue "contact:add"))
-        {})
+  (POST "/" {contact :body} (save-contact! contact))
   (context "/:id" [id]
-           (defroutes id-routes
-             (GET "/" [] (get-contact id))
-             (DELETE "/" [] (delete-contact! id)))))
+           (if-let [id (Long/parseLong id)]
+             (defroutes id-routes
+               (GET "/" [] (d/get id))
+               (DELETE "/" [] (delete-contact! id))))))
