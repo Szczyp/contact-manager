@@ -32,5 +32,5 @@
       wrap-bootstrap-resources
       http/wrap-ring-handler))
 
-(defonce server
-  (http/start-http-server #'app {:port 3000 :websocket true}))
+(defn -main [port]
+  (http/start-http-server #'app {:port (Integer. port) :websocket true}))

@@ -12,7 +12,6 @@
                  [cheshire "5.0.2"]
                  [ccfontes/hiccup-bootstrap "0.1.3"]]
   :plugins [[lein-cljsbuild "0.3.0"]]
-  :hooks [leiningen.cljsbuild]
   :source-paths ["src/clj"]
   :cljsbuild {:builds {:main {:source-paths ["src/cljs"]
                               :compiler {:output-to "resources/public/js/app.js"

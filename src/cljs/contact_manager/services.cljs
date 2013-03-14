@@ -12,7 +12,9 @@
                                               #(.$broadcast $rootScope cmd body)))
                    socket (-> (websocket/create)
                               (websocket/register-handler! message-handler)
-                              (websocket/connect! "ws://localhost:3000/socket"))]
+                              (websocket/connect! (str "ws://"
+                                                       js/document.location.host
+                                                       "/socket")))]
                (assoc! (js-obj)
                        :emit (fn [cmd message]
                                (websocket/emit! socket cmd message)))))))

@@ -1,4 +1,5 @@
 (ns contact-manager.data
+  (:refer-clojure :exclude [get])
   (:require [clojure.java.io :as io]
             [cemerick.friend.credentials :as creds])
   (:use [datomic.api :only (q db) :as d]))

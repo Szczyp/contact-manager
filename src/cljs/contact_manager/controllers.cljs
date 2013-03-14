@@ -33,8 +33,9 @@
                                              "phone" "")
                       reset-contact! #(assoc! $scope :contact (empty-contact))]
                   (assoc! $scope
-                          :add #(let [contact (:contact $scope)]
+                          :save #(let [contact (:contact $scope)]
                                   (.post $http "/contacts" contact)
+                                  (assoc! $scope :old-contact nil)
                                   (reset-contact!))
                           :cancel (fn []
                                     (.$emit $scope "contact:change" (:old-contact $scope))

@@ -20,7 +20,7 @@
                 :ng-model "contact.phone"}
                "phone")
    [:button {:class "btn btn-primary"
-             :ng-click "add()"}
+             :ng-click "save()"}
     "Save"]
    [:button {:class "btn btn-primary"
              :ng-click "cancel()"}
