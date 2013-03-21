@@ -7,11 +7,11 @@
                        [route :as route])
             [ring.middleware.resource :as resource]
             [ring.util.response :as response]
-            [contact-manager.data :as d])
-  (:use [compojure.core :as compojure :only (GET ANY defroutes context)]
-        [ring.middleware.json :only (wrap-json-body wrap-json-response)]
-        [hiccup.bootstrap.middleware :only (wrap-bootstrap-resources)]
-        [contact-manager views broadcast contacts]))
+            [contact-manager.data :as d]
+            [compojure.core :refer (GET ANY defroutes context)]
+            [ring.middleware.json :refer (wrap-json-body wrap-json-response)]
+            [hiccup.bootstrap.middleware :refer (wrap-bootstrap-resources)])
+  (:use [contact-manager views broadcast contacts]))
 
 (defroutes routes
   (context "/contacts" [] (-> contact-routes (friend/wrap-authorize #{:user.role/user})))
